@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="author" content="Gracia Aning Videllisa">
+    <meta name="description" content="leaflet basic">
+
+    <!-- Judul pada tab browser -->
+    <title>WEBGIS - UMKM</title>
+
+    <!-- Leaflet CSS Library -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css">
+
+    <!-- Tab browser icon -->
+    <link rel="icon" type="image/x-icon" href="http://luk.staff.ugm.ac.id/logo/UGM/Resmi/Warna.gif">
+
+    <!--Geolocation CSS Library for plugin-->
+    <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/L.Control.Locate.css">
+
+    <!--Font Awesome CSS Library-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css">
+
+    <!--Search CSS Library-->
+    <link rel="stylesheet" href="assets/plugins/leaflet-search/src/leaflet-search.css">
+
+    <!--Leaflet Mouse Position CSS Library-->
+    <link rel="stylesheet" href="assets/plugins/Leaflet-mouseposition/src/L.Control.MousePosition.css">
+
+    <!--Leaflet Measure CSS Library-->
+    <link rel="stylesheet" href="assets/plugins/leaflet-measure/src/leaflet-measure.css">
+
+    <!--Leaflet EasyPrint CSS Library-->
+    <!-- <link rel="stylesheet" href="assets/plugins/leaflet-easyPrint/src/leaflet-easyprint.css"> -->
+
+    <style>
+        /* Background pada Judul */
+        *.info {
+            padding: 6px 8px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: rgb(18, 86, 42);
+            background: rgba(77, 87, 12, 0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            text-align: center;
+        }
+        .info h2 {
+            margin: 7px 5px 5px;
+            color: rgb(255, 255, 255);
+        }
+        .info h4 {
+            color: rgb(255, 255, 255);
+        }
+
+        /Tampilan peta fullscreen/
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+            margin: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <!--Leaflet Javascript Library-->
+    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+
+    <!--untuk menampilkan file dalam format geojson-->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+    <!--Geolocation Javascript Library-->
+    <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/L.Control.Locate.min.js"></script>
+
+    <!--Search JS Library-->
+    <script src="assets/plugins/leaflet-search/src/leaflet-search.js"></script>
+
+    <!--Leaflet Mouse Position JS Library-->
+    <script src="assets/plugins/Leaflet-mouseposition/src/L.Control.MousePosition.js"></script>
+
+    <!--Leaflet Measure JS Library-->
+    <script src="assets/plugins/leaflet-measure/src/leaflet-measure.js"></script>
+
+    <!--Leaflet EasyPrint JS Library-->
+    <!-- <script src="assets/plugins/leaflet-easyPrint/src/index.js"></script> -->
+
+    <div id="map"></div>
+</body>
+
+<script>
+    /* Initial Map */
+    var map = L.map('map').setView([-7.690788312374429, 110.35314880200124],12); //lat, long, zoom
+
+    /* Tile Basemap */ //(note: pilihan basemap diakses pada https://leaflet-extras.github.io/leaflet-providers/preview/)
+    var basemap1 = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | <a href="DIVSIG UGM" target="_blank">SIG UGM</a>' //menambahkan nama//
+    });
+
+    var basemap2 = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptile s.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+    });
+
+    var basemap3 = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+        attribution: 'Tiles &copy; Esri | <a href=" WebGIS" target="_blank">DIV SIG UGM 2020</a>',
+      });
+
+    basemap3.addTo(map);
+
+    /* Judul dan Subjudul */
+    var info = new L.Control();
+
+    info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'info');
+        this.update();
+        return this._div;
+    };
+
+    info.update = function () {
+        this._div.innerHTML = '<h2>WEBGIS | UMKM </h2> <h4> UMKM Kecamatan Sleman</h4>'
+    };
+
+    info.addTo(map);
+    
+   /* Image Legend */
+   L.Control.Legend = L.Control.extend({
+        onAdd: function(map) {
+            var img = L.DomUtil.create('img');
+            img.src = 'Database/Nonspatial/logosig.png';
+            img.style.width = '100px';
+            return img;
+        }
+    });
+    
+    L.control.Legend = function(opts) {
+        return new L.Control.Legend(opts);
+    }
+
+    L.control.Legend({ position: 'bottomright' }).addTo(map); 
+    /* Image Watermark */
+    L.Control.Watermark = L.Control.extend({
+        onAdd: function(map) {
+            var img = L.DomUtil.create('img');
+            img.src = 'Database/Nonspatial/logougm.png';
+            img.style.width = '100px';
+            return img;
+        }
+    });
+
+    L.control.watermark = function(opts) {
+        return new L.Control.Watermark(opts);
+    }
+    
+    L.control.watermark({ position: 'bottomleft' }).addTo(map);
+
+    /* GeoJSON Polyline Style 01 – Data Nominal*/
+    //pembuatan pane dan z.index digunakan untuk menyusun ordering layer agar tidak saling menutupi
+    $.getJSON("data/jalan.geojson", function (data) {
+        jalan.addData(data);
+        map.addLayer(jalan);
+        map.fitBounds(jalan.getBounds());
+    });
+    map.createPane("pane_Jalan_Sleman");
+    map.getPane("pane_Jalan_Sleman").style.zIndex = 405;
+
+    var jalan = L.geoJson(null, {
+        style: function (feature) {
+                return {
+                    color: "#000000", //Warna garis
+                    dashArray: '',
+                    weight: 4, //Tebal garis
+                    opacity: 1, //Transparansi garis
+                }
+
+        },
+    });
+    
+    /* memanggil data file geojson polygon 01 – Data Interval/Rasio */
+    $.getJSON("data/KecSlemanAdmin.geojson", function (data) {
+        KecSlemanAdmin.addData(data);
+        map.addLayer(KecSlemanAdmin);
+        map.fitBounds(KecSlemanAdmin.getBounds());
+    });
+
+    /* GeoJSON Polygon Style 01*/
+    var KecSlemanAdmin = L.geoJson(null, {
+        style: function (feature) {
+            return {
+                opacity: 1,
+                color: 'black',
+                weight: 1,
+                dashArray: '3',
+                fillOpacity: 0.7, 
+                fillColor: '#808000'
+            }
+        },
+    });
+    
+    /* Control Layer */
+    var baseMaps = {
+        "OpenStreetMap": basemap1,
+        "Stadia Dark Mode": basemap2,
+        "World Imagery" : basemap3
+    };
+
+    var overlayMaps = {
+        "Jaringan Jalan": jalan,
+        "Batas Administrasi": KecSlemanAdmin
+    };
+
+    L.control.layers(baseMaps, overlayMaps, {collapsed: true}).addTo(map);
+
+    /* Scale Bar */
+    L.control.scale({
+    maxWidth: 150,position:'bottomright'
+    }).addTo(map);
+
+    /*Plugin Search */
+    var searchControl = new L.Control.Search({
+        position: "topleft",
+        layer: KecSlemanAdmin,          //Nama variabel layer
+        propertyName: 'NAMOBJ',    //Field untuk pencarian
+        marker: false,
+        moveToLocation: function(latlng, title, map) {
+            var zoom = map.getBoundsZoom(latlng.layer.getBounds());
+            map.setView(latlng, zoom);
+        }
+    });
+    searchControl.on('search:locationfound', function(e) {
+        e.layer.setStyle({
+            fillColor: '#ffff00', 
+            color: '#0000ff'
+        });
+    }).on('search:collapse', function(e) {
+        KecSlemanAdmin.eachLayer(function(layer) {
+            KecSlemanAdmin.resetStyle(layer);
+        });
+    });
+    map.addControl(searchControl);
+    
+    /Plugin Geolocation/
+    var locateControl = L.control.locate({
+        position: "topleft",
+        drawCircle: true,
+        follow: true,
+        setView: true,
+        keepCurrentZoomLevel: false,
+        markerStyle: {
+            weight: 1,
+            opacity: 0.8,
+            fillOpacity: 0.8,
+        },
+        circleStyle:{
+            weight: 1,
+            clickable: false,
+        },
+        icon: "fas fa-crosshairs",
+        metric: true,
+        strings: {
+            title: "Click for Your Location",
+            popup: "You're here. Accuracy {distance} {unit}",
+            outsideMapBoundsMsg: "Not available"
+        },
+        locateOptions: {
+            maxZoom: 16,
+            watch: true,
+            enableHighAccuracy: true,
+            maximumAge: 10000,
+            timeout: 10000
+        },
+    }).addTo(map);
+
+    /*Plugin Mouse Position Coordinate */
+    L.control.mousePosition({position:'bottomright',
+    separator: ',',
+    prefix: 'Koordinat : '
+    }).addTo(map);
+
+    /* Layer Marker */
+    /* Memanggil File GeoJSON Point 01*/
+    var marker1 = L.marker([-7.680835894462889, 110.33714026807307]);
+      marker1.addTo(map);
+      marker1.bindPopup("<h2>Listya Collection</h2> <p>Alamat : Ganjuran No. 67 RT 003/RW008 Caturharjo Sleman</p> <p> Jenis Usaha : Batik <p>No Telp : 085602875817</p>");
+
+      var marker2 = L.marker([-7.682419029388952, 110.36769139690834]);
+      marker2.addTo(map);
+      marker2.bindPopup("<h2>Batik Sekar Idaman</h2> <p>Alamat : Plalangan RT 003 Pandowoharjo Sleman</p> <p> Jenis Usaha : Batik <p>No Telp : 085868613804</p>");
+
+      var marker3 = L.marker([-7.687290962043789, 110.34858166807318]);
+      marker3.addTo(map);
+      marker3.bindPopup("<h2>Batik Dewi Kunthi</h2> <p>Alamat : Murangan 8 RT 2 RW 26 Triharjo Sleman</p> <p> Jenis Usaha : Batik <p>No Telp : 085865277634</p>");
+
+      var marker4 = L.marker([-7.681067100020342, 110.33707465555501]);
+      marker4.addTo(map);
+      marker4.bindPopup("<h2>Eggroll Rosana</h2> <p>Alamat : GANJURAN RT 04 RW 008 CATURHARJO SLEMAN</p> <p> Jenis Usaha : Makanan <p>No Telp : 088227889698</p>");
+
+      var marker5 = L.marker([-7.6838058944607655, 110.36275199690841]);
+      marker5.addTo(map);
+      marker5.bindPopup("<h2>Mantaran Batik</h2> <p>Alamat : Mantaran Trimulyo sleman</p> <p> Jenis Usaha : Batik <p>No Telp : 081329737743</p>");
+
+      var marker6 = L.marker([-7.680676927043405, 110.33699721040243]);
+      marker6.addTo(map);
+      marker6.bindPopup("<h2>Anif Bawang</h2> <p>Alamat : Ganjuran RT 02 RW 07 Caturharjo Sleman</p> <p> Jenis Usaha : Hasil bumi bawang brambang <p>No Telp : 08562851014</p>");
+
+      var marker7 = L.marker([-7.67226442888803, 110.34507386622572]);
+      marker7.addTo(map);
+      marker7.bindPopup("<h2>Aba Ali Food</h2> <p>Alamat : Jl sidomulyo no3 rt04 rw27 Trimulyo Sleman Yogyakarta </p> <p> Jenis Usaha : Makanan <p>No Telp : 082137265529</p>");
+
+      var marker8 = L.marker([-7.681570994462358, 110.36932046807308]);
+      marker9.addTo(map);
+      marker9.bindPopup("<h2>Yosa Batik</h2> <p>Alamat : Plalangan Rt 02 Pandowoharjo Sleman</p> <p> Jenis Usaha : Batik <p>No Telp : 082135776146</p>");
+
+      var marker9 = L.marker([-7.682276561921736, 110.36828459690827]);
+      marker10.addTo(map);
+      marker10.bindPopup("<h2>Batik Ayu Arimbi</h2> <p>Alamat : Plalangan 02/40 Pandowoharjo sleman</p> <p> Jenis Usaha : Batik <p>No Telp : 081215623864</p>");
+
+      var marker10 = L.marker([-7.69827613017249, 110.36598429690844]);
+      marker11.addTo(map);
+      marker11.bindPopup("<h2>Batik Sleman</h2> <p>Alamat : Jl. Pandowoharjo No.12 B, Kleben Moncosan, Mancasan, Kec. Sleman, Kabupaten Sleman, Daerah Istimewa Yogyakarta 55512</p> <p> Jenis Usaha : Batik <p>No Telp : 081215623864</p>");
+
+      var marker11 = L.marker([-7.681218610743799, 110.33863102439958]);
+      marker12.addTo(map);
+      marker12.bindPopup("<h2>Sweet Flower Bu Heri</h2> <p>Alamat : Ganjuran, Jetis, Caturharjo, Kec. Sleman, Kabupaten Sleman, Daerah Istimewa Yogyakarta 55515</p> <p> Jenis Usaha : Bucket bunga boneka,bucket bunga,bucket snack <p>No Telp : 081227887568 </p>");
+
+
+    /*Plugin EasyPrint */
+    L.easyPrint({
+        title: 'Print'
+    }).addTo(map); 
+
+    
+
+    </script>
+</html>
